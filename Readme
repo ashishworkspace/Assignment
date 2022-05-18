@@ -1,0 +1,36 @@
+Assignment:
+Develop a Serverless application to Manage IAM users.
+Backend Serverless Application:
+- Use serverless framework(https://serverless.com/) to build the application.
+(https://serverless.com/blog/flask-python-rest-api-serverless-lambda-dynamodb/)
+- The backend code needs to be developed in Python.
+- You will need to use AWS SDK to connect to AWS account and do IAM users related
+operations. (https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
+- The data will be stored in DynamoDB table.
+(https://boto3.amazonaws.com/v1/documentation/api/latest/guide/dynamodb.html)
+- Deploy the application using CodePipeline auto trigger based on a comming in CodeCommit.
+https://docs.aws.amazon.com/codepipeline/latest/userguide/tutorials-serverlessrepo-autopublish.html
+Requirement:
+- You will need to build 5 APIs
+- Sync IAM users (This will get all the IAM users from the AWS account and add them to
+dynamodb. Remove old users to avoid duplication.)
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html#user
+- List IAM users (This will get all the IAM users from Dynamodb and return as json)
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.htm
+l#DynamoDB.Client.scan
+- Show single IAM user details (This will get 1 IAM user detail for which the details requested
+from DynamoDB)
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.htm
+l#DynamoDB.Client.query
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html#IAM.
+Client.get_user
+- Delete IAM user (This will delete the IAM user from DyanmoDB and do sync again)
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.htm
+l#DynamoDB.Client.delete_item
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html#IAM.
+Client.delete_user
+- Create IAM user (This will create new IAM user in AWS account and do sync again)
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.htm
+l#DynamoDB.Client.update_item
+- https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html#IAM.
+Client.create_user
