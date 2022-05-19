@@ -1,12 +1,12 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 import boto3
-
 
 app = Flask(__name__)
 iam = boto3.client("iam")
 dynamodb = boto3.resource('dynamodb')
 
 
+#  Creating Dynamodb table of name 'users'
 def createdb():
     table = dynamodb.create_table(
         TableName='users',
@@ -31,6 +31,8 @@ def createdb():
     )
     table.wait_until_exists()
 
+
+# this function is used to get data from IAM and add that record to DynamoDB
 def syncIamUsersIntoDB():
     paginator = iam.get_paginator('list_users')
     for response in paginator.paginate():
@@ -44,17 +46,17 @@ def syncIamUsersIntoDB():
                 'status': 'added',
             }
     ) 
+
+# Running the createdb() if database table is not created
 try: 
     createdb()   
-    syncIamUsersIntoDB()
 except:
     pass
 
 table = dynamodb.Table('users')
 
       
-    
-
+# Route to /useradd/<some-user-name> will add user to IAM
 @app.route("/useradd/<string:username>")
 def useradd(username):
     iam.create_user(UserName=username)
@@ -74,6 +76,7 @@ def useradd(username):
     return jsonify(result)
 
 
+# Route to /userdelete/<some-user-name> will remove user form IAM
 @app.route("/userdelete/<string:username>")
 def userdelete(username):
     iam.delete_user(
@@ -92,6 +95,7 @@ def userdelete(username):
     return jsonify(result)
 
 
+# Route to /userdetail/<some-user-name> will provide policy about that user
 @app.route("/userdetail/<string:username>")
 def userdetail(username):
     response = iam.get_user(
@@ -105,11 +109,14 @@ def userdetail(username):
     return jsonify(result)
 
 
+# Route to /listuser will list all user from dynamodb
 @app.route("/listuser")
 def listuser():
     resp = table.scan(AttributesToGet=['username'])
     return jsonify(resp["Items"])
 
+
+# Route to /syncuser will sync data from IAM to DynamoDB
 @app.route("/syncuser")
 def syncuser():
     syncIamUsersIntoDB()
@@ -117,6 +124,11 @@ def syncuser():
         "sync status": "successful"
     })
 
+
+# Route / will send you data
+@app.route("/")
+def home():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
