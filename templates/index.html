@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User</title>
+  </head>
+  <style>
+    body,
+    html {
+      font-family: sans-serif;
+    }
+    th,
+    td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    th {
+      background-color: #04aa6d;
+      color: white;
+    }
+
+    table {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: x1000px;
+    }
+  </style>
+  <body>
+    <table>
+      <tr>
+        <th>Detail</th>
+        <th>Rest API Route</th>
+      </tr>
+      <tr>
+        <td>(will add user to IAM)</td>
+        <td>/useradd/some-user-name</td>
+      </tr>
+      <tr>
+        <td>(will remove user from IAM)</td>
+        <td>/userdelete/some-user-name</td>
+      </tr>
+      <tr>
+        <td>(will provide policy about that user)</td>
+        <td>/userdetail/some-user-name</td>
+      </tr>
+      <tr>
+        <td>(will sync data from IAM to DynamoDB)</td>
+        <td>/syncuser</td>
+      </tr>
+      <tr>
+        <td>(will list all user from dynamodb)</td>
+        <td>/listuser</td>
+      </tr>
+    </table>
+  </body>
+</html>
