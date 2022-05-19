@@ -31,13 +31,29 @@ def createdb():
     )
     table.wait_until_exists()
 
+def syncIamUsersIntoDB():
+    paginator = iam.get_paginator('list_users')
+    for response in paginator.paginate():
+        for user in response["Users"]:
+            username = user['UserName']
+            policy = iam.list_user_policies(UserName=username)
+            table.put_item(
+            Item={
+                'username': username,
+                f"{username}_policy": policy,
+                'status': 'added',
+            }
+    ) 
 try: 
-    createdb()
+    createdb()   
+    syncIamUsersIntoDB()
 except:
     pass
 
 table = dynamodb.Table('users')
 
+      
+    
 
 @app.route("/useradd/<string:username>")
 def useradd(username):
@@ -54,6 +70,7 @@ def useradd(username):
             'status': 'added',
         }
     )
+    syncIamUsersIntoDB()
     return jsonify(result)
 
 
@@ -71,7 +88,7 @@ def userdelete(username):
         "Name": username,
         "Status": "removed"
     }
-
+    syncIamUsersIntoDB()
     return jsonify(result)
 
 
@@ -92,6 +109,13 @@ def userdetail(username):
 def listuser():
     resp = table.scan(AttributesToGet=['username'])
     return jsonify(resp["Items"])
+
+@app.route("/syncuser")
+def syncuser():
+    syncIamUsersIntoDB()
+    return jsonify({
+        "sync status": "successful"
+    })
 
 
 if __name__ == '__main__':
