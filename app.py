@@ -1,38 +1,25 @@
-from flask import Flask, jsonify, render_template
+import os
+
 import boto3
+from flask import Flask, jsonify, make_response, request, render_template
 
 app = Flask(__name__)
 iam = boto3.client("iam")
+
+
 dynamodb = boto3.resource('dynamodb')
 
-
-#  Creating Dynamodb table of name 'users'
-def createdb():
-    table = dynamodb.create_table(
-        TableName='users',
-        KeySchema=[
-            {
-                'AttributeName': 'username',
-                'KeyType': 'HASH'
-            }
-
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'username',
-                'AttributeType': 'S'
-            }
-
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 5,
-            'WriteCapacityUnits': 5
-        }
+if os.environ.get('IS_OFFLINE'):
+    dynamodb_client = boto3.client(
+        'dynamodb', region_name='localhost', endpoint_url='http://localhost:8000'
     )
-    table.wait_until_exists()
 
+table = dynamodb.Table('users-table-data')
+USERS_TABLE = os.environ['USERS_TABLE']
 
 # this function is used to get data from IAM and add that record to DynamoDB
+
+
 def syncIamUsersIntoDB():
     paginator = iam.get_paginator('list_users')
     for response in paginator.paginate():
@@ -40,22 +27,14 @@ def syncIamUsersIntoDB():
             username = user['UserName']
             policy = iam.list_user_policies(UserName=username)
             table.put_item(
-            Item={
-                'username': username,
-                f"{username}_policy": policy,
-                'status': 'added',
-            }
-    ) 
+                Item={
+                    'username': username,
+                    f"{username}_policy": policy,
+                    'status': 'added',
+                }
+            )
 
-# Running the createdb() if database table is not created
-try: 
-    createdb()   
-except:
-    pass
 
-table = dynamodb.Table('users')
-
-      
 # Route to /useradd/<some-user-name> will add user to IAM
 @app.route("/useradd/<string:username>")
 def useradd(username):
@@ -123,12 +102,14 @@ def syncuser():
     return jsonify({
         "sync status": "successful"
     })
-
-
 # Route / will send you data
+
+
 @app.route("/")
 def home():
     return render_template('index.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+@app.errorhandler(404)
+def resource_not_found(e):
+    return make_response(jsonify(error='Not found!'), 404)
