@@ -18,8 +18,6 @@ table = dynamodb.Table('users-table-data')
 USERS_TABLE = os.environ['USERS_TABLE']
 
 # this function is used to get data from IAM and add that record to DynamoDB
-
-
 def syncIamUsersIntoDB():
     paginator = iam.get_paginator('list_users')
     for response in paginator.paginate():
@@ -102,9 +100,8 @@ def syncuser():
     return jsonify({
         "sync status": "successful"
     })
+
 # Route / will send you data
-
-
 @app.route("/")
 def home():
     return render_template('index.html')
